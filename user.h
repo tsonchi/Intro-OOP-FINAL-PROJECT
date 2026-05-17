@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <cmath>
 #include "DailyTracker.h"
+#include "WorkoutSession.h"
+#include "Achievement.h"
 
 class User {
 private:
@@ -24,9 +26,10 @@ private:
     int fatsTarget;
 
     std::vector<DailyTracker> nutritionHistory;
+    std::vector<WorkoutSession> workoutHistory;
+    std::vector<Achievement> personalRecords;
 
     void calculateCaloricTarget() {
-        // 1. Изчисляване на BMR
         double bmr;
         if (gender == 'M' || gender == 'm') {
             bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
@@ -34,7 +37,6 @@ private:
             bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
         }
 
-        // 2. Изчисляване на AMR (с активност)
         double amr = bmr;
         switch (activityLevel) {
             case 1: amr *= 1.2; break;
@@ -45,7 +47,6 @@ private:
             default: amr *= 1.2; break;
         }
 
-        // 3. Калориен излишък/дефицит в проценти
         if (goal == "Gain") {
             dailyCaloricTarget = (int)(amr + (amr * 0.10));
         } else if (goal == "Lose") {
@@ -54,30 +55,64 @@ private:
             dailyCaloricTarget = (int)amr;
         }
 
-        // 4. УНИВЕРСАЛНО изчисляване на Макроси според активността
-        double proteinMultiplier = 1.2; // по подразбиране за неактивни хора
+        double proteinMultiplier = 1.2;
         double fatsMultiplier = 0.8;
 
         if (activityLevel >= 3) {
-            proteinMultiplier = 2.0; // за трениращи хора
+            proteinMultiplier = 2.0;
             fatsMultiplier = 1.0;
         } else if (activityLevel == 2) {
-            proteinMultiplier = 1.6; // за умерено активни
+            proteinMultiplier = 1.6;
             fatsMultiplier = 0.9;
         }
 
         proteinTarget = (int)(weight * proteinMultiplier);
         fatsTarget = (int)(weight * fatsMultiplier);
         
-        // Въглехидратите обират останалите калории
         double caloriesFromProtein = proteinTarget * 4.0;
         double caloriesFromFats = fatsTarget * 9.0;
         double remainingCalories = dailyCaloricTarget - (caloriesFromProtein + caloriesFromFats);
         
-        // Защита: ако калориите не стигат (при много агресивен дефицит), въглехидратите да не станат отрицателни
         if (remainingCalories < 0) remainingCalories = 0; 
-
         carbsTarget = (int)(remainingCalories / 4.0);
+    }
+
+    void checkNewRecords(const WorkoutSession& session) {
+        for (const auto& exercise : session.getExercises()) {
+            double maxWeightToday = 0;
+            int repsForMaxWeight = 0;
+            bool foundValidSet = false;
+
+            for (const auto& set : exercise.getSets()) {
+                if (!set.getIsWarmup() && set.getWeight() > maxWeightToday) {
+                    maxWeightToday = set.getWeight();
+                    repsForMaxWeight = set.getReps();
+                    foundValidSet = true;
+                }
+            }
+
+            if (!foundValidSet) continue;
+
+            bool dynamicRecordFound = false;
+            for (auto& pr : personalRecords) {
+                if (pr.getExerciseName() == exercise.getName()) {
+                    dynamicRecordFound = true;
+                    if (maxWeightToday > pr.getMaxWeight()) {
+                        std::cout << "NEW PERSONAL RECORD for " << exercise.getName() << "! "
+                                  << maxWeightToday << " kg x " << repsForMaxWeight << " reps "
+                                  << "(Previous PR: " << pr.getMaxWeight() << " kg)" << std::endl;
+                        pr.updateRecord(maxWeightToday, repsForMaxWeight);
+                    }
+                    break;
+                }
+            }
+
+            if (!dynamicRecordFound) {
+                personalRecords.push_back(Achievement(exercise.getName(), maxWeightToday, repsForMaxWeight));
+                std::cout << "First record for " << exercise.getName() << " set to " 
+                          << maxWeightToday << " kg." << std::endl;
+            }
+        }
     }
 
 public:
@@ -108,16 +143,22 @@ public:
 
     std::string getName() const { return name; }
     int getDailyCaloricTarget() const { return dailyCaloricTarget; }
+    const std::vector<DailyTracker>& getNutritionHistory() const { return nutritionHistory; }
+    const std::vector<WorkoutSession>& getWorkoutHistory() const { return workoutHistory; }
 
-    // Методът за промяна на теглото, който поиска
     void updateWeight(double newWeight) {
         if (newWeight <= 0) throw std::invalid_argument("Weight must be a positive number.");
         this->weight = newWeight;
-        calculateCaloricTarget(); // Автоматично преизчислява всичко
+        calculateCaloricTarget();
     }
 
     void addDailyRecord(const DailyTracker& record) {
         nutritionHistory.push_back(record);
+    }
+
+    void addWorkoutRecord(const WorkoutSession& session) {
+        workoutHistory.push_back(session);
+        checkNewRecords(session);
     }
 
     void displayProfile() const {
@@ -132,7 +173,6 @@ public:
 
     void displayDailyReport(std::string date) const {
         const DailyTracker* targetRecord = nullptr;
-
         for (const auto& record : nutritionHistory) {
             if (record.getDate() == date) {
                 targetRecord = &record;
@@ -149,38 +189,44 @@ public:
         int eatenP = (int)targetRecord->getTotalProteinEaten();
         int eatenC = (int)targetRecord->getTotalCarbsEaten();
         int eatenF = (int)targetRecord->getTotalFatsEaten();
-
         int balanceCal = dailyCaloricTarget - eatenCal;
 
-        std::cout << "\n========================================\n";
+        std::cout << "========================================" << std::endl;
         std::cout << "DAILY NUTRITION REPORT FOR " << name << std::endl;
         std::cout << "Date: " << date << std::endl;
-        std::cout << "========================================\n";
-        std::cout << " (Nutrient) | Eaten / Target\n";
-        std::cout << "----------------------------------------\n";
-        std::cout << "Calories:       " << eatenCal << " / " << dailyCaloricTarget << " kcal\n";
-        std::cout << "Protein:        " << eatenP << " / " << proteinTarget << " g\n";
-        std::cout << "Carbs:          " << eatenC << " / " << carbsTarget << " g\n";
-        std::cout << "Fats:           " << eatenF << " / " << fatsTarget << " g\n";
-        std::cout << "----------------------------------------\n";
+        std::cout << "========================================" << std::endl;
+        std::cout << "Calories:       " << eatenCal << " / " << dailyCaloricTarget << " kcal" << std::endl;
+        std::cout << "Protein:        " << eatenP << " / " << proteinTarget << " g" << std::endl;
+        std::cout << "Carbs:          " << eatenC << " / " << carbsTarget << " g" << std::endl;
+        std::cout << "Fats:           " << eatenF << " / " << fatsTarget << " g" << std::endl;
+        std::cout << "----------------------------------------" << std::endl;
 
         if (balanceCal > 0) {
-            std::cout << "Remaining: You need " << balanceCal << " kcal MORE to hit your target.\n";
-            if (eatenP < proteinTarget) {
-                std::cout << "Tip: You are short on protein (" << (proteinTarget - eatenP) << "g left). Focus on protein sources!\n";
-            }
-            if (eatenC < carbsTarget) {
-                std::cout << "Tip: You are short on carbs (" << (carbsTarget - eatenC) << "g left). Consider adding some whole grains or fruits.\n";
-            }
-            if (eatenF < fatsTarget) {
-                std::cout << "Tip: You are short on fats (" << (fatsTarget - eatenF) << "g left). Healthy fats can be found in nuts, seeds, and avocados.\n";
-            }
+            std::cout << "Remaining: You need " << balanceCal << " kcal MORE to hit your target." << std::endl;
         } else if (balanceCal < 0) {
-            std::cout << "Surplus: You exceeded your target by " << std::abs(balanceCal) << " kcal.\n";
+            std::cout << "Surplus: You exceeded your target by " << std::abs(balanceCal) << " kcal." << std::endl;
         } else {
-            std::cout << "Perfect! You hit your daily caloric target exactly!\n";
+            std::cout << "Perfect! You hit your daily caloric target exactly!" << std::endl;
         }
-        std::cout << "========================================\n\n";
+        std::cout << "========================================" << std::endl << std::endl;
+    }
+
+    void displayWorkoutReport(std::string date) const {
+        const WorkoutSession* targetWorkout = nullptr;
+        for (const auto& session : workoutHistory) {
+            if (session.getDate() == date) {
+                targetWorkout = &session;
+                break;
+            }
+        }
+
+        if (targetWorkout == nullptr) {
+            std::cout << "No workout logged for date: " << date << std::endl;
+            return;
+        }
+
+        std::cout << "=== WORKOUT REPORT FOR " << name << " ===" << std::endl;
+        targetWorkout->displayWorkout();
     }
 };
 
