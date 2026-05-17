@@ -28,6 +28,30 @@ public:
         }
         return total;
     }
+
+    double getTotalProteinEaten() const {
+        double total = 0;
+        for (const auto& meal : dailyMeals) {
+            total += meal.getTotalProtein();
+        }
+        return total;
+    }
+
+    double getTotalCarbsEaten() const {
+        double total = 0;
+        for (const auto& meal : dailyMeals) {
+            total += meal.getTotalCarbs();
+        }
+        return total;
+    }
+
+    double getTotalFatsEaten() const {
+        double total = 0;
+        for (const auto& meal : dailyMeals) {
+            total += meal.getTotalFats();
+        }
+        return total;
+    }
 };
 
 #endif
