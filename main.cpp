@@ -34,29 +34,31 @@ int main() {
     }
 
     try {
-        DailyTracker tracker("2026-17-05", juli);
+        DailyTracker today("2026-17-05");
 
         Meal breakfast("Breakfast");
         breakfast.addProduct(library.readProduct("Apple"), 150);
         breakfast.addProduct(library.readProduct("Bread"), 100);
         breakfast.displayMeal();
-        tracker.addMeal(breakfast);
+        today.addMeal(breakfast);
 
         Meal lunch("Lunch");
         lunch.addProduct(library.readProduct("Chicken Breast"), 200);   
         lunch.displayMeal();
-        tracker.addMeal(lunch);
+        today.addMeal(lunch);
 
         Meal dinner("Dinner");
         dinner.addProduct(library.readProduct("Broccoli"), 100);
         dinner.addProduct(library.readProduct("Potatoes"), 200);
         dinner.displayMeal();
-        tracker.addMeal(dinner);
+        today.addMeal(dinner);
 
-        tracker.displayDailyReport();
+        juli.addDailyRecord(today);
+
+        juli.displayDailyReport("2026-17-05");
+
     } catch (const invalid_argument& e) {
         cout << "Tracker Error: " << e.what() << endl;
     }
-
     return 0;
 }

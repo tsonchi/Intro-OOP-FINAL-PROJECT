@@ -2,96 +2,132 @@
 #define USER_H
 
 #include <string>
+#include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <cmath>
+#include "DailyTracker.h"
 
 class User {
 private:
     std::string name;
-    char gender;            // 'M' for Male, 'F' for Female
-    double height;          // in cm
-    double weight;          // in kg
-    int age;                // years
-    int activityLevel;      // 1 to 5
-    std::string goalType;   // "Gain", "Maintain", "Lose"
-    double dailyCaloricTarget;
+    char gender;
+    double height;
+    double weight;
+    int age;
+    int activityLevel;
+    std::string goal;
+    int dailyCaloricTarget;
 
-    void calculateDailyNeeds() {
-        // Mifflin-St Jeor Equation
-        double bmr = (10 * weight) + (6.25 * height) - (5 * age);
+    std::vector<DailyTracker> nutritionHistory;
+
+    void calculateCaloricTarget() {
+        double bmr;
         if (gender == 'M' || gender == 'm') {
-            bmr += 5;
+            bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
         } else {
-            bmr -= 161;
+            bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
         }
 
-        double activityMultiplier = 1.2;
+        double amr = bmr;
         switch (activityLevel) {
-            case 1: activityMultiplier = 1.2;   break; // Sedentary
-            case 2: activityMultiplier = 1.375; break; // Lightly active
-            case 3: activityMultiplier = 1.55;  break; // Moderately active
-            case 4: activityMultiplier = 1.725; break; // Very active
-            case 5: activityMultiplier = 1.9;   break; // Super active
+            case 1: amr *= 1.2; break;
+            case 2: amr *= 1.375; break;
+            case 3: amr *= 1.55; break;
+            case 4: amr *= 1.725; break;
+            case 5: amr *= 1.9; break;
+            default: amr *= 1.2; break;
         }
 
-        double tdee = bmr * activityMultiplier; 
-
-        if (goalType == "Gain") {
-            dailyCaloricTarget = tdee + 300; 
-        } else if (goalType == "Lose") {
-            dailyCaloricTarget = tdee - 400; 
+        if (goal == "Gain") {
+            dailyCaloricTarget = (int)(amr + (amr * 0.10));
+        } else if (goal == "Lose") {
+            dailyCaloricTarget = (int)(amr - (amr * 0.20));
         } else {
-            dailyCaloricTarget = tdee;       
+            dailyCaloricTarget = (int)amr;
         }
     }
-
 public:
-    User(std::string name, char gender, double height, double weight, int age, int activityLevel, std::string goalType) {
-        if(name == "") throw std::invalid_argument("Name cannot be empty.");
+    User(std::string name, char gender, double height, double weight, int age, int activityLevel, std::string goal) {
+        if (name == "") throw std::invalid_argument("Name cannot be empty.");
+        if (gender != 'M' && gender != 'm' && gender != 'F' && gender != 'f') {
+            throw std::invalid_argument("Gender must be 'M' or 'F'.");
+        }
+        if (height <= 0 || weight <= 0 || age <= 0) {
+            throw std::invalid_argument("Height, weight, and age must be positive numbers.");
+        }
+        if (activityLevel < 1 || activityLevel > 5) {
+            throw std::invalid_argument("Activity level must be between 1 and 5.");
+        }
+        if (goal != "Gain" && goal != "Lose" && goal != "Maintain") {
+            throw std::invalid_argument("Goal must be 'Gain', 'Lose', or 'Maintain'.");
+        }
+
         this->name = name;
-        
-        if (gender != 'M' && gender != 'F' && gender != 'm' && gender != 'f') {
-            throw std::invalid_argument("Invalid gender. Use 'M' or 'F'.");
-        }
-        this->gender = (gender == 'F' || gender == 'f') ? 'F' : 'M';
-        
-        setPhysicalData(height, weight, age);
-        setActivityAndGoal(activityLevel, goalType);
+        this->gender = gender;
+        this->height = height;
+        this->weight = weight;
+        this->age = age;
+        this->activityLevel = activityLevel;
+        this->goal = goal;
+        calculateCaloricTarget();
     }
 
-    void setPhysicalData(double h, double w, int a) {
-        if (h <= 0 || h > 300) throw std::invalid_argument("Height must be a positive number between 0 and 300.");
-        if (w <= 0 || w > 500) throw std::invalid_argument("Weight must be a positive number between 0 and 500.");
-        if (a <= 0 || a > 110) throw std::invalid_argument("Age must be a positive number between 0 and 110.");
-        height = h;
-        weight = w;
-        age = a;
-        calculateDailyNeeds(); 
+    std::string getName() const { return name; }
+    int getDailyCaloricTarget() const { return dailyCaloricTarget; }
+
+    void addDailyRecord(const DailyTracker& record) {
+        nutritionHistory.push_back(record);
     }
-
-    void setActivityAndGoal(int activity, std::string goal) {
-        if (activity >= 1 && activity <= 5) activityLevel = activity;
-        else throw std::invalid_argument("Activity level must be between 1 and 5.");
-
-        if (goal == "Gain" || goal == "Maintain" || goal == "Lose") {
-            goalType = goal;
-        } else {
-            throw std::invalid_argument("Invalid goal. Use 'Gain', 'Maintain' or 'Lose'.");
-        }
-        calculateDailyNeeds();
-    }
-
-    int getDailyCaloricTarget() const { return (int)dailyCaloricTarget; }
 
     void displayProfile() const {
+        std::cout << "=== User Profile ===" << std::endl;
+        std::cout << "Name: " << name << std::endl;
+        std::cout << "Goal: " << goal << std::endl;
+        std::cout << "Daily Caloric Target: " << dailyCaloricTarget << " kcal" << std::endl;
+        std::cout << "====================" << std::endl << std::endl;
+    }
+
+    void displayDailyReport(std::string date) const {
+        int eaten = 0;
+        bool found = false;
+
+        for (const auto& record : nutritionHistory) {
+            if (record.getDate() == date) {
+                eaten = (int)record.getTotalCaloriesEaten();
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            std::cout << "No nutrition data found for date: " << date << std::endl;
+            return;
+        }
+
+        int balance = dailyCaloricTarget - eaten;
+
+        std::cout << "\n========================================\n";
+        std::cout << "DAILY CALORIE REPORT FOR " << name << std::endl;
+        std::cout << "Date: " << date << std::endl;
         std::cout << "========================================\n";
-        std::cout << "USER PROFILE: " << name << " (" << (gender == 'M' ? "Male" : "Female") << ")\n";
-        std::cout << "========================================\n";
-        std::cout << " Height: " << height << " cm | Weight: " << weight << " kg | Age: " << age << " y/o\n";
-        std::cout << " Activity Level (1-5): " << activityLevel << "\n";
-        std::cout << " Goal: " << goalType << "\n";
+        std::cout << "Target: " << dailyCaloricTarget << " kcal\n";
+        std::cout << "Eaten: " << eaten << " kcal\n";
         std::cout << "----------------------------------------\n";
-        std::cout << " Daily Caloric Target: " << getDailyCaloricTarget() << " kcal\n";
+
+        if (balance > 0) {
+            std::cout << "Remaining: You need " << balance << " kcal MORE to hit your target.\n";
+            if (balance > 500) {
+                std::cout << "Tip: You are quite short on calories. Consider a high-protein snack!\n";
+            }
+        } else if (balance < 0) {
+            std::cout << "Surplus: You exceeded your target by " << std::abs(balance) << " kcal.\n";
+            if (eaten > dailyCaloricTarget + 500) {
+                std::cout << "Tip: Watch out! You are way over your daily budget.\n";
+            }
+        } else {
+            std::cout << "Perfect! You hit your daily caloric target exactly!\n";
+        }
         std::cout << "========================================\n\n";
     }
 };
