@@ -9,6 +9,7 @@
 #include "ReportGenerator.h"
 #include "InventoryItem.h"
 #include "ExerciseLibrary.h"
+#include "SupplementLibrary.h"
 
 using namespace std;
 
@@ -16,6 +17,7 @@ int main() {
     User juli("Yuliyan Tsonchev", 'M', 173, 63, 16, 3, "Gain");
     FoodLibrary library;
     ExerciseLibrary exLibrary;
+    SupplementLibrary supLibrary;
 
     try {
         juli.displayProfile();
@@ -36,6 +38,12 @@ int main() {
         library.deleteProduct("Rice");
     } catch (const invalid_argument& e) {
         cout << "Library Error: " << e.what() << endl;
+    }
+    try{
+        supLibrary.createProduct(TrainingFoodProduct("Creatine", 0, 0, 0, 30));
+        supLibrary.createProduct(TrainingFoodProduct("Protein Powder", 80, 5, 3, 60));
+    } catch (const invalid_argument& e) {
+        cout << "Supplement Library Error: " << e.what() << endl;
     }
 
     try {
