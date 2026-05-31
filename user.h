@@ -50,6 +50,15 @@ private:
         }
     }
 
+    void markDailySupplementConsumed(const std::string& date, const std::string& supplementName) {
+        for (auto& record : nutritionHistory) {
+            if (record.getDate() == date) {
+                record.markSupplementConsumed(supplementName);
+                return;
+            }
+        }
+    }
+
     void calculateCaloricTarget() {
         double bmr;//Basal Metabolic Rate
         if (gender == 'M' || gender == 'm') {
@@ -201,6 +210,11 @@ public:
         throw std::invalid_argument("Supplement not found: " + supplementName);
     }
 
+    void consumeSupplement(const std::string& supplementName, const std::string& date) {
+        consumeSupplement(supplementName);
+        markDailySupplementConsumed(date, supplementName);
+    }
+
     void displayProfile() const {
         std::cout << "=== User Profile ===" << std::endl;
         std::cout << "Name: " << name << std::endl;
@@ -251,10 +265,10 @@ public:
         }
         if(!supplements.empty()){
             for(const auto& sup: supplements){
-                if(!sup.getIsConsumedDose()){
-                    std::cout << "Supplement: " << sup.getName() << " | Dose not consumed: "  << std::endl;
+                if(!targetRecord->hasConsumedSupplement(sup.getName())){
+                    std::cout << "Supplement: " << sup.getName() << " | Doses Available: " << sup.getCurrentDoses() << " (Dose not consumed today)" << std::endl;
                 } else {
-                    std::cout << "Supplement: " << sup.getName() << " | Doses Available: " << sup.getCurrentDoses() << " (Dose consumed)" << std::endl;
+                    std::cout << "Supplement: " << sup.getName() << " | Doses Available: " << sup.getCurrentDoses() << " (Dose consumed today)" << std::endl;
                 }
             }
         }else{

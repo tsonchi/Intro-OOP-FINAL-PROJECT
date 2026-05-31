@@ -9,6 +9,7 @@ class DailyTracker {
 private:
     std::string date;
     std::vector<Meal> dailyMeals;
+    std::vector<std::string> consumedSupplements;
     bool workoutComplete;
 
 public:
@@ -22,12 +23,28 @@ public:
         workoutComplete = true;
     }
 
+    void markSupplementConsumed(const std::string& supplementName) {
+        if (!hasConsumedSupplement(supplementName)) {
+            consumedSupplements.push_back(supplementName);
+        }
+    }
+
     std::string getDate() const { 
         return date; 
     }
 
     bool getWorkoutComplete() const {
         return workoutComplete;
+    }
+
+    bool hasConsumedSupplement(const std::string& supplementName) const {
+        for (const auto& consumedSupplement : consumedSupplements) {
+            if (consumedSupplement == supplementName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     double getTotalCaloriesEaten() const {

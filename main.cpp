@@ -69,6 +69,7 @@ int main() {
         InventoryItem creatine("Creatine", 0, 0, 0, 30, 5);
         juli.addSupplement(creatine);
         juli.consumeSupplement("Creatine");
+        today.markSupplementConsumed("Creatine");
         InventoryItem proteinPowder("Protein Powder", 80, 5, 3, 60, 30);
         juli.addSupplement(proteinPowder);
 
