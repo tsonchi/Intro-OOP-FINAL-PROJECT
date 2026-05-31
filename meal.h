@@ -10,7 +10,7 @@
 class Meal {
 private:
     std::string mealName;
-    std::vector<std::pair<FoodProductSnapshot, double>> eatenProducts;
+    std::vector<std::pair<BasicFoodProduct, double>> eatenProducts;
 
 public:
     Meal(std::string name) {

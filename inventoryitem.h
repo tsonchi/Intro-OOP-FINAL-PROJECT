@@ -6,14 +6,14 @@
 #include <string>
 #include <stdexcept>
 
-class InventoryItem : public FoodProduct {
+class InventoryItem : public TrainingFoodProduct {
 private:
     int totalDoses;
     double doseSizeGrams;
 
 public:
     InventoryItem(std::string name, double protein, double carbs, double fats, int totalDoses, double doseSize)
-        : FoodProduct(name, protein, carbs, fats, totalDoses), totalDoses(totalDoses), doseSizeGrams(doseSize) {
+        : TrainingFoodProduct(name, protein, carbs, fats, totalDoses), totalDoses(totalDoses), doseSizeGrams(doseSize) {
         if (totalDoses <= 0 || doseSize <= 0) {
             throw std::invalid_argument("Doses and dose size must be positive numbers.");
         }

@@ -69,6 +69,9 @@ public:
     BasicFoodProduct(std::string name, double protein, double carbs, double fats)
         : FoodProduct(name, protein, carbs, fats) {}
 
+    BasicFoodProduct(const FoodProduct& product)
+        : FoodProduct(product.getName(), product.getProtein(), product.getCarbs(), product.getFats()) {}
+
     void displayProduct() const override {
         std::cout << "Food Product: " << getName() << std::endl;
         std::cout << "Protein: " << getProtein() << " g/100g" << std::endl;
@@ -78,20 +81,21 @@ public:
     }
 };
 
-class FoodProductSnapshot : public FoodProduct {
+class TrainingFoodProduct : public FoodProduct {
 public:
-    FoodProductSnapshot(const FoodProduct& product)
+    TrainingFoodProduct(const FoodProduct& product)
         : FoodProduct(product.getName(), product.getProtein(), product.getCarbs(), product.getFats(), product.getCurrentDoses()) {}
 
-    FoodProductSnapshot(std::string name, double protein, double carbs, double fats, int currentDoses = 0)
+    TrainingFoodProduct(std::string name, double protein, double carbs, double fats, int currentDoses = 0)
         : FoodProduct(name, protein, carbs, fats, currentDoses) {}
 
     void displayProduct() const override {
-        std::cout << "Food Product: " << getName() << std::endl;
+        std::cout << "Training Food Product: " << getName() << std::endl;
         std::cout << "Protein: " << getProtein() << " g/100g" << std::endl;
         std::cout << "Carbs: " << getCarbs() << " g/100g" << std::endl;
         std::cout << "Fats: " << getFats() << " g/100g" << std::endl;
         std::cout << "Calories: " << getCalories() << " kcal/100g" << std::endl;
+        std::cout << "Current doses: " << getCurrentDoses() << std::endl;
     }
 };
 
