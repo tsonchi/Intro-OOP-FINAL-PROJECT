@@ -10,10 +10,11 @@ class InventoryItem : public TrainingFoodProduct {
 private:
     int totalDoses;
     double doseSizeGrams;
+    bool isConsumedDose;
 
 public:
     InventoryItem(std::string name, double protein, double carbs, double fats, int totalDoses, double doseSize)
-        : TrainingFoodProduct(name, protein, carbs, fats, totalDoses), totalDoses(totalDoses), doseSizeGrams(doseSize) {
+        : TrainingFoodProduct(name, protein, carbs, fats, totalDoses), totalDoses(totalDoses), doseSizeGrams(doseSize), isConsumedDose(false) {
         if (totalDoses <= 0 || doseSize <= 0) {
             throw std::invalid_argument("Doses and dose size must be positive numbers.");
         }
@@ -21,6 +22,7 @@ public:
 
     int getTotalDoses() const { return totalDoses; }
     double getDoseSizeGrams() const { return doseSizeGrams; }
+
 
     void consumeDose() {
         if (!useDose()) {
@@ -33,7 +35,10 @@ public:
         if (getCurrentDoses() <= 5 && getCurrentDoses() > 0) {
             std::cout << "Warning: " << getName() << " is running low! Only " << getCurrentDoses() << " doses left." << std::endl;
         }
+        isConsumedDose = true;
     }
+
+    bool getIsConsumedDose() const { return isConsumedDose; }
 
     void restock(int additionalDoses) {
         addDoses(additionalDoses);

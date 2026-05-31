@@ -9,6 +9,7 @@
 #include "DailyTracker.h"
 #include "WorkoutSession.h"
 #include "Achievement.h"
+#include "inventoryitem.h"
 
 class User {
 private:
@@ -28,6 +29,7 @@ private:
     std::vector<DailyTracker> nutritionHistory;
     std::vector<WorkoutSession> workoutHistory;
     std::vector<Achievement> personalRecords;
+    std::vector<InventoryItem> supplements;
 
     void calculateCaloricTarget() {
         double bmr;//Basal Metabolic Rate
@@ -145,6 +147,7 @@ public:
     int getDailyCaloricTarget() const { return dailyCaloricTarget; }
     const std::vector<DailyTracker>& getNutritionHistory() const { return nutritionHistory; }
     const std::vector<WorkoutSession>& getWorkoutHistory() const { return workoutHistory; }
+    const std::vector<InventoryItem>& getSupplements() const {return supplements;}
 
     void updateWeight(double newWeight) {
         if (newWeight <= 0) throw std::invalid_argument("Weight must be a positive number.");
@@ -159,6 +162,20 @@ public:
     void addWorkoutRecord(const WorkoutSession& session) {
         workoutHistory.push_back(session);
         checkNewRecords(session);
+    }
+    void addSupplement(const InventoryItem& supplement) {
+        supplements.push_back(supplement);
+    }
+
+    void consumeSupplement(const std::string& supplementName) {
+        for (auto& supplement : supplements) {
+            if (supplement.getName() == supplementName) {
+                supplement.consumeDose();
+                return;
+            }
+        }
+
+        throw std::invalid_argument("Supplement not found: " + supplementName);
     }
 
     void displayProfile() const {
@@ -208,6 +225,17 @@ public:
         } else {
             std::cout << "Perfect! You hit your daily caloric target exactly!" << std::endl;
         }
+        if(!supplements.empty()){
+            for(const auto& sup: supplements){
+                if(!sup.getIsConsumedDose()){
+                    std::cout << "Supplement: " << sup.getName() << " | Dose not consumed: "  << std::endl;
+                } else {
+                    std::cout << "Supplement: " << sup.getName() << " | Doses Available: " << sup.getCurrentDoses() << " (Dose consumed)" << std::endl;
+                }
+            }
+        }else{
+            std::cout << "No supplements added yet." << std::endl;
+        }
         std::cout << "========================================" << std::endl << std::endl;
     }
 
@@ -230,4 +258,4 @@ public:
     }
 };
 
-#endif
+#endif 
