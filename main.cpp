@@ -9,7 +9,6 @@
 #include "ReportGenerator.h"
 #include "InventoryItem.h"
 #include "ExerciseLibrary.h"
-#include "SupplementLibrary.h"
 
 using namespace std;
 
@@ -17,8 +16,6 @@ int main() {
     User juli("Yuliyan Tsonchev", 'M', 173, 63, 16, 3, "Gain");
     FoodLibrary library;
     ExerciseLibrary exLibrary;
-    SupplementLibrary supLibrary;
-
     try {
         juli.displayProfile();
     } catch (const invalid_argument& e) {
@@ -39,12 +36,7 @@ int main() {
     } catch (const invalid_argument& e) {
         cout << "Library Error: " << e.what() << endl;
     }
-    try{
-        supLibrary.createProduct(TrainingFoodProduct("Creatine", 0, 0, 0, 30));
-        supLibrary.createProduct(TrainingFoodProduct("Protein Powder", 80, 5, 3, 60));
-    } catch (const invalid_argument& e) {
-        cout << "Supplement Library Error: " << e.what() << endl;
-    }
+    
 
     try {
         exLibrary.addExerciseToLibrary(Exercise("Bench Press", "Chest"));
@@ -81,7 +73,6 @@ int main() {
         today.addMeal(dinner);
 
         juli.addDailyRecord(today);
-        juli.displayDailyReport("2026-17-05");
 
     } catch (const invalid_argument& e) {
         cout << "Tracker Error: " << e.what() << endl;
@@ -134,6 +125,8 @@ int main() {
     } catch (const invalid_argument& e) {
         cout << "File Parser Error: " << e.what() << endl;
     }
+
+    juli.displayDailyReport("2026-17-05");
 
     cout << "\n--- Generating Final Weekly Report ---" << endl;
     ReportGenerator::generateWeeklyReport(juli, juli.getNutritionHistory(), juli.getWorkoutHistory());

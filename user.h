@@ -31,6 +31,25 @@ private:
     std::vector<Achievement> personalRecords;
     std::vector<InventoryItem> supplements;
 
+    bool hasWorkoutForDate(const std::string& date) const {
+        for (const auto& session : workoutHistory) {
+            if (session.getDate() == date) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void markDailyWorkoutComplete(const std::string& date) {
+        for (auto& record : nutritionHistory) {
+            if (record.getDate() == date) {
+                record.markWorkoutComplete();
+                return;
+            }
+        }
+    }
+
     void calculateCaloricTarget() {
         double bmr;//Basal Metabolic Rate
         if (gender == 'M' || gender == 'm') {
@@ -155,12 +174,16 @@ public:
         calculateCaloricTarget();
     }
 
-    void addDailyRecord(const DailyTracker& record) {
+    void addDailyRecord(DailyTracker record) {
+        if (hasWorkoutForDate(record.getDate())) {
+            record.markWorkoutComplete();
+        }
         nutritionHistory.push_back(record);
     }
 
     void addWorkoutRecord(const WorkoutSession& session) {
         workoutHistory.push_back(session);
+        markDailyWorkoutComplete(session.getDate());
         checkNewRecords(session);
     }
     void addSupplement(const InventoryItem& supplement) {
@@ -216,6 +239,7 @@ public:
         std::cout << "Protein:        " << eatenP << " / " << proteinTarget << " g" << std::endl;
         std::cout << "Carbs:          " << eatenC << " / " << carbsTarget << " g" << std::endl;
         std::cout << "Fats:           " << eatenF << " / " << fatsTarget << " g" << std::endl;
+        std::cout << "Workout:        " << (targetRecord->getWorkoutComplete() ? "Complete" : "Not complete yet") << std::endl;
         std::cout << "----------------------------------------" << std::endl;
 
         if (balanceCal > 0) {

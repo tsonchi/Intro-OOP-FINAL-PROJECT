@@ -9,16 +9,25 @@ class DailyTracker {
 private:
     std::string date;
     std::vector<Meal> dailyMeals;
+    bool workoutComplete;
 
 public:
-    DailyTracker(std::string date) : date(date) {}
+    DailyTracker(std::string date) : date(date), workoutComplete(false) {}
 
     void addMeal(const Meal& meal) {
         dailyMeals.push_back(meal);
     }
 
+    void markWorkoutComplete() {
+        workoutComplete = true;
+    }
+
     std::string getDate() const { 
         return date; 
+    }
+
+    bool getWorkoutComplete() const {
+        return workoutComplete;
     }
 
     double getTotalCaloriesEaten() const {

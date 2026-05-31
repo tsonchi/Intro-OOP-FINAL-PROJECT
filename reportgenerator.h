@@ -3,6 +3,8 @@
 
 #include "User.h"
 #include <iostream>
+#include <map>
+#include <string>
 #include <vector>
 
 class ReportGenerator {
@@ -18,11 +20,37 @@ public:
         }
         
         double avgCalories = (nutritionDays > 0) ? (totalCal / nutritionDays) : 0;
-        size_t workoutCount = workouts.size();
+        size_t workoutDays = (workouts.size() > 7) ? 7 : workouts.size();
+        std::map<std::string, Achievement> weeklyRecords;
+
+        for (size_t i = workouts.size() - workoutDays; i < workouts.size(); ++i) {
+            for (const auto& exercise : workouts[i].getExercises()) {
+                for (const auto& set : exercise.getSets()) {
+                    if (set.getIsWarmup()) continue;
+
+                    auto record = weeklyRecords.find(exercise.getName());
+                    if (record == weeklyRecords.end()) {
+                        weeklyRecords.insert({ exercise.getName(), Achievement(exercise.getName(), set.getWeight(), set.getReps()) });
+                    } else if (set.getWeight() > record->second.getMaxWeight()) {
+                        record->second.updateRecord(set.getWeight(), set.getReps());
+                    }
+                }
+            }
+        }
 
         std::cout << " Average Calories: " << (int)avgCalories << " kcal / day" << std::endl;
         std::cout << " Target Calories: " << user.getDailyCaloricTarget() << " kcal" << std::endl;
-        std::cout << " Total Workouts: " << workoutCount << std::endl;
+        std::cout << " Total Workouts: " << workoutDays << std::endl;
+        std::cout << " Weekly Records:" << std::endl;
+        if (weeklyRecords.empty()) {
+            std::cout << "  No workout records this week." << std::endl;
+        } else {
+            for (const auto& record : weeklyRecords) {
+                std::cout << "  " << record.second.getExerciseName() << ": "
+                          << record.second.getMaxWeight() << " kg x "
+                          << record.second.getReps() << " reps" << std::endl;
+            }
+        }
         std::cout << "---------------------------------" << std::endl << std::endl;
     }
 };
