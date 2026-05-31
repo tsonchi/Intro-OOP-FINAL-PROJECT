@@ -1,4 +1,188 @@
+i need to make food product an abstract class and inventory items a derived class idk how also i want to add currentDoses to food product instead of inventory item
+12:06 PM
 
+
+Worked for 4m 33s
+Done. I changed the class structure so:
+
+FoodProduct.h is now abstract with virtual void displayProduct() const = 0;
+currentDoses now lives in FoodProduct, with getCurrentDoses(), addDoses(), and useDose()
+inventoryitem.h now derives from FoodProduct and no longer owns currentDoses
+Added BasicFoodProduct for regular foods, since abstract classes cannot be instantiated directly
+Updated foodlibrary.h, meal.h, and main.cpp so the project still works with an abstract base class
+I verified it with:
+
+g++ -std=c++17 main.cpp -o main.exe
+.\main.exe
+Both compile and run successfully. Also, user.h was already modified in your working tree; I left it alone.
+
+
+Edited 5 files
++169
+-63
+Undo
+Review
+
+FoodLibrary.h
++13
+-13
+
+FoodProduct.h
++98
+-0
+
+Meal.h
++4
+-4
+
+Show 2 more files
+
+
+
+
+12:10 PM
+okay can you add 2 derived classes called BasicFoodProduct and TrainingFood product for supplements instead of FoodProductSnapshot
+12:20 PM
+
+
+Worked for 1m 4s
+Done. I removed FoodProductSnapshot and replaced it with the two real derived classes:
+
+BasicFoodProduct : public FoodProduct for regular foods
+TrainingFoodProduct : public FoodProduct for supplements
+I also updated InventoryItem so it now derives from TrainingFoodProduct, which makes the hierarchy:
+
+FoodProduct
+├── BasicFoodProduct
+└── TrainingFoodProduct
+    └── InventoryItem
+Changed storage too:
+
+FoodLibrary now stores std::vector<BasicFoodProduct>
+Meal now stores BasicFoodProduct entries instead of FoodProductSnapshot
+Verified with:
+
+g++ -std=c++17 main.cpp -o main.exe
+.\main.exe
+Both compile and run cleanly.
+
+
+Edited 4 files
++14
+-10
+Undo
+Review
+
+FoodProduct.h
++8
+-4
+
+Meal.h
++1
+-1
+
+foodlibrary.h
++3
+-3
+
+Show 1 more file
+
+
+
+
+12:21 PM
+can you make some functions for excersises like readfrom file that reads from a file that is like this
+Push Day
+2026-17-06
+Chest
+Bench Press
+20x15
+40x10
+60x8
+65x6
+
+Overhead Press
+15x12
+30x20
+-----------
+Leg Day
+2026-18-05
+Squat
+20x15
+60x10
+------------
+
+
+
+so it reads until the line  it reads the name of the workout session then the date then starts reading excersies and sets but we need friend istream functions on a lot of places
+
+Show more
+12:54 PM
+
+
+
+Worked for 3m 35s
+Done. I added file-reading support for workouts and sets.
+
+Changed:
+
+set.h: added friend std::istream& operator>>(...) so lines like 20x15 become a Set.
+exercise.h: added default constructor and an input operator for exercise names.
+WorkoutSession.h: added:
+friend std::istream& operator>>(std::istream&, WorkoutSession&)
+static std::vector<WorkoutSession> readFromFile(const std::string& fileName)
+Usage example:
+
+vector<WorkoutSession> workouts = WorkoutSession::readFromFile("workouts.txt");
+
+for (const auto& workout : workouts) {
+    workout.displayWorkout();
+    juli.addWorkoutRecord(workout);
+}
+The parser reads:
+
+Workout name
+Date
+optional muscle group
+Exercise name
+20x15
+40x10
+
+Next Exercise
+15x12
+-----------
+If an exercise has no muscle group line, it uses "Unknown".
+
+I compiled with:
+
+g++ -std=c++17 main.cpp -o main.exe
+and also tested the parser with your sample format; it read 2 workout sessions correctly.
+
+
+Edited 5 files
++350
+-30
+Undo
+Review
+
+Exercise.h
++67
+-0
+
+Set.h
++54
+-0
+
+WorkoutSession.h
++198
+-1
+
+Show 2 more files
+
+
+
+
+12:58 PM
 Fix creatine consumed status
 
 
