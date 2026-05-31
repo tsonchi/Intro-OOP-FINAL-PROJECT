@@ -30,6 +30,10 @@ int main() {
         library.createProduct(BasicFoodProduct("Broccoli", 2.8, 7, 0.4));
         library.createProduct(BasicFoodProduct("Potatoes", 2, 17, 0.1));
         library.createProduct(BasicFoodProduct("Protein Shake", 20, 3, 1));
+        library.createProduct(BasicFoodProduct("Oats", 13, 68, 7));
+        library.createProduct(BasicFoodProduct("Eggs", 13, 1.1, 11));
+        library.createProduct(BasicFoodProduct("Greek Yogurt", 10, 3.6, 0.4));
+        library.createProduct(BasicFoodProduct("Salmon", 20, 0, 13));
 
         library.updateProduct("Bread", 9, 48, 2);
         library.deleteProduct("Rice");
@@ -42,6 +46,8 @@ int main() {
         exLibrary.addExerciseToLibrary(Exercise("Bench Press", "Chest"));
         exLibrary.addExerciseToLibrary(Exercise("Overhead Press", "Shoulders"));
         exLibrary.addExerciseToLibrary(Exercise("Squat", "Legs"));
+        exLibrary.addExerciseToLibrary(Exercise("Deadlift", "Back"));
+        exLibrary.addExerciseToLibrary(Exercise("Barbell Row", "Back"));
     } catch (const invalid_argument& e) {
         cout << "Exercise Library Error: " << e.what() << endl;
     }
@@ -74,41 +80,52 @@ int main() {
 
         juli.addDailyRecord(today);
 
+        DailyTracker outsideWeek("2026-24-05");
+
+        Meal outsideBreakfast("Breakfast");
+        outsideBreakfast.addProduct(library.readProduct("Greek Yogurt"), 250);
+        outsideBreakfast.addProduct(library.readProduct("Oats"), 60);
+        outsideBreakfast.displayMeal();
+        outsideWeek.addMeal(outsideBreakfast);
+
+        Meal outsideDinner("Dinner");
+        outsideDinner.addProduct(library.readProduct("Salmon"), 200);
+        outsideDinner.addProduct(library.readProduct("Broccoli"), 150);
+        outsideDinner.displayMeal();
+        outsideWeek.addMeal(outsideDinner);
+
+        juli.addDailyRecord(outsideWeek);
+
     } catch (const invalid_argument& e) {
         cout << "Tracker Error: " << e.what() << endl;
     }
 
-        
+    try {
+        WorkoutSession oldWorkout("Old Bench Day", "2026-10-05");
+        Exercise oldBench = exLibrary.getExerciseFromLibrary("Bench Press");
+        oldBench.addSet(Set(20, 12, true));
+        oldBench.addSet(Set(80, 5));
+        oldBench.addSet(Set(90, 3));
+        oldWorkout.addExercise(oldBench);
+        juli.addWorkoutRecord(oldWorkout);
 
+        WorkoutSession pullDay("Pull Day", "2026-20-05");
+        Exercise deadlift = exLibrary.getExerciseFromLibrary("Deadlift");
+        deadlift.addSet(Set(60, 8, true));
+        deadlift.addSet(Set(100, 5));
+        deadlift.addSet(Set(120, 3));
 
-    // try {
-    //     cout << "\n--- Testing Manual Workout Creation ---" << endl;
-    //     WorkoutSession pushDay("Push Day", "2026-17-05");
+        Exercise row = exLibrary.getExerciseFromLibrary("Barbell Row");
+        row.addSet(Set(40, 10));
+        row.addSet(Set(55, 8));
 
-    //     Exercise benchPress = exLibrary.getExerciseFromLibrary("Bench Press");
-    //     // Note: Assuming your Set constructor accepts (weight, reps, isWarmup)
-    //     benchPress.addSet(Set(20, 15, true)); 
-    //     benchPress.addSet(Set(40, 10, true)); 
-    //     benchPress.addSet(Set(60, 8));  
-    //     benchPress.addSet(Set(65, 6));  
+        pullDay.addExercise(deadlift);
+        pullDay.addExercise(row);
+        juli.addWorkoutRecord(pullDay);
 
-    //     Exercise overheadPress = exLibrary.getExerciseFromLibrary("Overhead Press");
-    //     overheadPress.addSet(Set(15, 12, true));
-    //     overheadPress.addSet(Set(30, 10, true));
-    //     overheadPress.addSet(Set(45, 8));
-    //     overheadPress.addSet(Set(50, 6));
-        
-    //     pushDay.addExercise(overheadPress);
-    //     pushDay.addExercise(benchPress);
-        
-    //     // Display to check if manual object generation works
-    //     pushDay.displayWorkout();
-        
-    //     juli.addWorkoutRecord(pushDay);
-
-    // } catch (const invalid_argument& e) {
-    //     cout << "Workout Error (Manual): " << e.what() << endl;
-    // }
+    } catch (const invalid_argument& e) {
+        cout << "Workout Error (Manual): " << e.what() << endl;
+    }
 
     try {
         // This will call your custom operator>> under the hood multiple times
@@ -127,9 +144,10 @@ int main() {
     }
 
     juli.displayDailyReport("2026-17-05");
+    juli.displayDailyReport("2026-24-05");
 
     cout << "\n--- Generating Final Weekly Report ---" << endl;
-    ReportGenerator::generateWeeklyReport(juli, juli.getNutritionHistory(), juli.getWorkoutHistory());
+    ReportGenerator::generateWeeklyReport(juli, juli.getNutritionHistory(), juli.getWorkoutHistory(), "2026-17-05", "2026-23-05");
 
     return 0;
 }
