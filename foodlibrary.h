@@ -8,7 +8,7 @@
 
 class FoodLibrary {
 private:
-    std::vector<FoodProduct> db;//databse of food products
+    std::vector<FoodProductSnapshot> db;//databse of food products
 
 public:
     // Create
@@ -22,7 +22,7 @@ public:
     }
 
     // Read
-    FoodProduct readProduct(std::string name) const {
+    FoodProductSnapshot readProduct(std::string name) const {
         for (const auto& item : db) {
             if (item.getName() == name) {
                 return item;
@@ -35,7 +35,7 @@ public:
     void updateProduct(std::string name, double newP, double newC, double newF) {
         for (auto& item : db) {
             if (item.getName() == name) {
-                item = FoodProduct(name, newP, newC, newF);
+                item = FoodProductSnapshot(name, newP, newC, newF, item.getCurrentDoses());
                 return;
             }
         }

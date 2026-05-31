@@ -24,13 +24,13 @@ int main() {
     }
 
     try {
-        library.createProduct(FoodProduct("Apple", 0.3, 14, 0.2));
-        library.createProduct(FoodProduct("Bread", 8, 50, 1.5));
-        library.createProduct(FoodProduct("Chicken Breast", 31, 0, 3.6));
-        library.createProduct(FoodProduct("Rice", 2.7, 28, 0.3));
-        library.createProduct(FoodProduct("Broccoli", 2.8, 7, 0.4));
-        library.createProduct(FoodProduct("Potatoes", 2, 17, 0.1));
-        library.createProduct(FoodProduct("Protein Shake", 20, 3, 1));
+        library.createProduct(BasicFoodProduct("Apple", 0.3, 14, 0.2));
+        library.createProduct(BasicFoodProduct("Bread", 8, 50, 1.5));
+        library.createProduct(BasicFoodProduct("Chicken Breast", 31, 0, 3.6));
+        library.createProduct(BasicFoodProduct("Rice", 2.7, 28, 0.3));
+        library.createProduct(BasicFoodProduct("Broccoli", 2.8, 7, 0.4));
+        library.createProduct(BasicFoodProduct("Potatoes", 2, 17, 0.1));
+        library.createProduct(BasicFoodProduct("Protein Shake", 20, 3, 1));
 
         library.updateProduct("Bread", 9, 48, 2);
         library.deleteProduct("Rice");

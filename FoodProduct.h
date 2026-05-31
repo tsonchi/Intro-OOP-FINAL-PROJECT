@@ -1,51 +1,97 @@
 #ifndef FOODPRODUCT_H
 #define FOODPRODUCT_H
 
-#include <string>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 class FoodProduct {
 private:
     std::string name;
-    double protein;      // на 100г
-    double carbs;        // на 100г
-    double fats;         // на 100г
-    double calories;     // изчислява се автоматично на 100г
+    double protein;
+    double carbs;
+    double fats;
+    double calories;
+    int currentDoses;
 
     void calculateCalories() {
-        // 1g Protein = 4 kcal, 1g Carbs = 4 kcal, 1g Fat = 9 kcal
         calories = (protein * 4) + (carbs * 4) + (fats * 9);
     }
 
 public:
-    // Конструктор
-    FoodProduct(std::string name, double protein, double carbs, double fats) {
+    FoodProduct(std::string name, double protein, double carbs, double fats, int currentDoses = 0) {
         if (name == "") throw std::invalid_argument("Product name cannot be empty.");
         if (protein < 0 || carbs < 0 || fats < 0) {
             throw std::invalid_argument("Macros cannot be negative numbers.");
+        }
+        if (currentDoses < 0) {
+            throw std::invalid_argument("Current doses cannot be negative.");
         }
 
         this->name = name;
         this->protein = protein;
         this->carbs = carbs;
         this->fats = fats;
+        this->currentDoses = currentDoses;
         calculateCalories();
     }
 
-    // Гетъри
+    virtual ~FoodProduct() {}
+
     std::string getName() const { return name; }
     double getProtein() const { return protein; }
     double getCarbs() const { return carbs; }
     double getFats() const { return fats; }
     double getCalories() const { return calories; }
+    int getCurrentDoses() const { return currentDoses; }
 
-    void displayProduct() const {
-        std::cout << "Food Product: " << name << std::endl;
-        std::cout << "Protein: " << protein << " g/100g" << std::endl;
-        std::cout << "Carbs: " << carbs << " g/100g" << std::endl;
-        std::cout << "Fats: " << fats << " g/100g" << std::endl;
-        std::cout << "Calories: " << calories << " kcal/100g" << std::endl;
+    void setCurrentDoses(int doses) {
+        if (doses < 0) throw std::invalid_argument("Current doses cannot be negative.");
+        currentDoses = doses;
+    }
+
+    void addDoses(int doses) {
+        if (doses <= 0) throw std::invalid_argument("Doses must be positive.");
+        currentDoses += doses;
+    }
+
+    bool useDose() {
+        if (currentDoses <= 0) return false;
+        currentDoses--;
+        return true;
+    }
+
+    virtual void displayProduct() const = 0;
+};
+
+class BasicFoodProduct : public FoodProduct {
+public:
+    BasicFoodProduct(std::string name, double protein, double carbs, double fats)
+        : FoodProduct(name, protein, carbs, fats) {}
+
+    void displayProduct() const override {
+        std::cout << "Food Product: " << getName() << std::endl;
+        std::cout << "Protein: " << getProtein() << " g/100g" << std::endl;
+        std::cout << "Carbs: " << getCarbs() << " g/100g" << std::endl;
+        std::cout << "Fats: " << getFats() << " g/100g" << std::endl;
+        std::cout << "Calories: " << getCalories() << " kcal/100g" << std::endl;
+    }
+};
+
+class FoodProductSnapshot : public FoodProduct {
+public:
+    FoodProductSnapshot(const FoodProduct& product)
+        : FoodProduct(product.getName(), product.getProtein(), product.getCarbs(), product.getFats(), product.getCurrentDoses()) {}
+
+    FoodProductSnapshot(std::string name, double protein, double carbs, double fats, int currentDoses = 0)
+        : FoodProduct(name, protein, carbs, fats, currentDoses) {}
+
+    void displayProduct() const override {
+        std::cout << "Food Product: " << getName() << std::endl;
+        std::cout << "Protein: " << getProtein() << " g/100g" << std::endl;
+        std::cout << "Carbs: " << getCarbs() << " g/100g" << std::endl;
+        std::cout << "Fats: " << getFats() << " g/100g" << std::endl;
+        std::cout << "Calories: " << getCalories() << " kcal/100g" << std::endl;
     }
 };
 

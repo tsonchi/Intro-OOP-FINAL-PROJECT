@@ -30,14 +30,14 @@ private:
     std::vector<Achievement> personalRecords;
 
     void calculateCaloricTarget() {
-        double bmr;
+        double bmr;//Basal Metabolic Rate
         if (gender == 'M' || gender == 'm') {
             bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
         } else {
             bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
         }
 
-        double amr = bmr;
+        double amr = bmr;//active metabolic rate
         switch (activityLevel) {
             case 1: amr *= 1.2; break;
             case 2: amr *= 1.375; break;
